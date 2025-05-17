@@ -1,7 +1,8 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Container from '@components/common/Container';
 import SubText from '~/components/common/SubText';
+import AnimatedButton from '~/components/common/AnimatedButton';
 import PatternBackground from '~/components/Onboard/PatternBackground';
 import { hp, WindowHeight, WindowWidth } from '~/utils/utils';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,7 +26,7 @@ const Onboard = () => {
           <View
             key={'rotated-element'}
             style={{
-              width: WindowWidth * 0.6,
+              width: WindowWidth * 0.57,
               height: WindowHeight * 0.3,
               marginHorizontal: 'auto',
             }}
@@ -36,10 +37,10 @@ const Onboard = () => {
         <SubText
           style={{
             fontWeight: '900',
-            fontSize: hp(3.8),
+            fontSize: hp(4),
           }}
           className="text-center leading-relaxed">
-          Explore Text Repetition Instantly.
+          Get Text Repetitions Instantly.
         </SubText>
         <View
           style={{
@@ -47,9 +48,7 @@ const Onboard = () => {
             justifyContent: 'flex-end',
             padding: 10,
           }}>
-          <Pressable className=" rounded-full border-2 py-4">
-            <SubText className="text-center text-xl font-bold">Welcome</SubText>
-          </Pressable>
+          <AnimatedButton text="Welcome" onPress={() => {}} />
         </View>
       </View>
       <View
@@ -62,21 +61,3 @@ const Onboard = () => {
 };
 
 export default Onboard;
-
-//  <View
-//           key={'rotated-element'}
-//           style={{
-//             width: WindowWidth * 0.52,
-//             height: WindowHeight * 0.25,
-//             marginHorizontal: 'auto',
-//           }}
-//           className="-rotate-6 rounded-3xl bg-red-500"
-//         />
-//         <SubText
-//           style={{
-//             fontWeight: '900',
-//             fontSize: hp(3.8),
-//           }}
-//           className="text-center leading-relaxed">
-//           Explore Text Repetition Instantly.
-//         </SubText>

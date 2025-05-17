@@ -6,7 +6,7 @@ import { deviceHeight, deviceWidth } from '~/utils/utils';
 const PatternBackground = () => {
   const size = 16;
   const dotColor = '#e5e7eb';
-  const dotRadius = 0.99; // Make it more visible
+  const dotRadius = 1; // Make it more visible
 
   const circles = [];
   for (let y = 0; y < deviceHeight; y += size) {
