@@ -13,11 +13,9 @@ const Main = createNativeStackNavigator<MainStackParamList>();
 
 export default function MainStack() {
   return (
-    <NavigationContainer>
-      <Main.Navigator initialRouteName="TabNavigator" screenOptions={{ headerShown: false }}>
-        <Main.Screen name="Auth" component={Auth} />
-        <Main.Screen name="TabNavigator" component={TabNavigator} />
-      </Main.Navigator>
-    </NavigationContainer>
+    <Main.Navigator initialRouteName="TabNavigator" screenOptions={{ headerShown: false }}>
+      <Main.Screen name="Auth" component={Auth} />
+      <Main.Screen name="TabNavigator" component={TabNavigator} />
+    </Main.Navigator>
   );
 }

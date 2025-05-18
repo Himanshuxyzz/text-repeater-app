@@ -15,8 +15,8 @@ const Container = ({ children, fullScreen = false, className, ...props }: Contai
   return !fullScreen ? (
     <SafeAreaView
       style={{
-        flex: 1,
         paddingTop: Platform.OS === 'android' ? inset.top : 0,
+        flexGrow: 1,
       }}>
       <View
         className={cn('flex-1 py-2', Platform.OS === 'ios' ? 'px-4' : 'px-3', className)}

@@ -6,7 +6,7 @@ import { Home, Settings } from '../screens';
 
 const Tab = createBottomTabNavigator();
 
-type Props = NativeStackScreenProps<RootStackParamList, 'TabNavigator'>;
+type Props = NativeStackScreenProps<RootStackParamList>;
 
 export default function TabLayout({ navigation }: Props) {
   return (

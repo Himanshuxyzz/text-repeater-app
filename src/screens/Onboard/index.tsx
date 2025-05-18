@@ -6,9 +6,14 @@ import AnimatedButton from '~/components/common/AnimatedButton';
 import PatternBackground from '~/components/Onboard/PatternBackground';
 import { hp, WindowHeight, WindowWidth } from '~/utils/utils';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { navigate } from '~/navigation/NavigationUtils';
 
 const Onboard = () => {
   const insets = useSafeAreaInsets();
+
+  const handleWelcome = () => {
+    navigate('MainStack');
+  };
   return (
     <Container fullScreen>
       <PatternBackground />
@@ -48,7 +53,7 @@ const Onboard = () => {
             justifyContent: 'flex-end',
             padding: 10,
           }}>
-          <AnimatedButton text="Welcome" onPress={() => {}} />
+          <AnimatedButton text="Welcome" onPress={handleWelcome} />
         </View>
       </View>
       <View
