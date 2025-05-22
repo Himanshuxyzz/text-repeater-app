@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Text Repeater",
-    "slug": "Text Repeater",
+    "slug": "text-repeater",
     "version": "1.0.0",
     "web": {
       "favicon": "./src/assets/favicon.png"
@@ -39,7 +39,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.app.textrepeaterapp.main"
@@ -51,6 +53,17 @@
       },
       "package": "com.app.textrepeaterapp.main",
       "edgeToEdgeEnabled": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "367e84bc-d8ec-437c-aac1-08c6cd6fa015"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/367e84bc-d8ec-437c-aac1-08c6cd6fa015"
     }
   }
 }
