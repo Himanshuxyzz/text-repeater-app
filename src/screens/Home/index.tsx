@@ -18,6 +18,7 @@ import PatternBackground from '~/components/Onboard/PatternBackground';
 import { WindowHeight } from '~/utils/utils';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import WordCharCounter from '~/components/Home/WordCharCounter';
+import FontStyleSelector from '~/components/Home/FontStyleSelector';
 import cn from '~/utils/cn';
 import AnimatedButton from '~/components/common/AnimatedButton';
 import { MainStackParamList } from '~/navigation/MainStack';
@@ -226,6 +227,8 @@ const Home: FC = () => {
                   onSubmitEditing={dismissKeyboard}
                 />
               </View>
+
+              <FontStyleSelector previewText={baseText || 'Sample Text'} />
             </View>
           </View>
           <View className="mb-4 flex-1 justify-end">

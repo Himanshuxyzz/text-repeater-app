@@ -10,16 +10,35 @@ interface TextState {
     addNewLine: boolean;
     addSpace: boolean;
   };
+  fontStyle: string;
+  availableFontStyles: { [key: string]: string };
   setBaseText: (text: string) => void;
   setRepetitions: (count: number) => void;
   setSettings: (settings: { addPeriod: boolean; addNewLine: boolean; addSpace: boolean }) => void;
+  setFontStyle: (style: string) => void;
   generateRepeatedText: () => string;
+  getStyledText: () => string;
 }
+
+// Font styles similar to those on iloveyoucopyandpaste.com
+const fontStyles = {
+  Normal: '',
+  Stars: '★·.·´¯`·.·★ $TEXT$ ★·.·´¯`·.·★',
+  Hearts: '♥♥♥ $TEXT$ ♥♥♥',
+  Love: '💖 $TEXT$ 💖',
+  Forever: '$TEXT$ Forever ❤️',
+  Sparkles: '✨💫 $TEXT$ 💫✨',
+  Roses: '🌹 $TEXT$ 🌹',
+  Waves: '≈≈≈≈ $TEXT$ ≈≈≈≈',
+  Fancy: '•°¯`•• $TEXT$ ••´¯°•',
+};
 
 const useTextStore = create<TextState>((set, get) => ({
   repeatedText: '',
   baseText: '',
   repetitions: 0,
+  fontStyle: 'Normal',
+  availableFontStyles: fontStyles,
   settings: {
     addPeriod: false,
     addNewLine: false,
@@ -33,6 +52,8 @@ const useTextStore = create<TextState>((set, get) => ({
   setRepetitions: (count: number) => set({ repetitions: count }),
 
   setSettings: (settings) => set({ settings }),
+
+  setFontStyle: (style: string) => set({ fontStyle: style }),
 
   generateRepeatedText: () => {
     const { baseText, repetitions, settings } = get();
@@ -82,6 +103,46 @@ const useTextStore = create<TextState>((set, get) => ({
 
     set({ repeatedText });
     return repeatedText;
+  },
+
+  getStyledText: () => {
+    const { repeatedText, fontStyle, availableFontStyles, settings } = get();
+
+    if (!repeatedText || fontStyle === 'Normal') {
+      return repeatedText;
+    }
+
+    const styleTemplate = availableFontStyles[fontStyle] || '';
+    if (!styleTemplate) {
+      return repeatedText;
+    }
+
+    // Apply style to each word/occurrence instead of the entire text
+    // First, split the text based on settings
+    let separator = '';
+    if (settings.addNewLine) {
+      separator += '\n';
+    }
+    if (settings.addSpace) {
+      separator += ' ';
+    }
+
+    // If there's no separator, we need to apply styling to the baseText before repetition
+    if (!separator) {
+      // For no separator case, we need to style each character or try to identify words
+      // For simplicity, we'll apply the style to the entire text
+      return styleTemplate.replace('$TEXT$', repeatedText);
+    }
+
+    // Split by separator and apply style to each part
+    const parts = repeatedText.split(separator);
+    const styledParts = parts.map((part) => {
+      if (!part.trim()) return part; // Skip empty parts
+      return styleTemplate.replace('$TEXT$', part);
+    });
+
+    // Join back with the same separator
+    return styledParts.join(separator);
   },
 }));
 

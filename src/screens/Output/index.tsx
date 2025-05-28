@@ -23,11 +23,14 @@ import useTextStore from '~/store/textStore';
 const OutputScreen: FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const { repeatedText } = useTextStore();
+  const { repeatedText, fontStyle, getStyledText } = useTextStore();
 
   const [isCopied, setIsCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [useStyledText, setUseStyledText] = useState(fontStyle !== 'Normal');
+
+  const displayText = useStyledText ? getStyledText() : repeatedText;
 
   // Copy text to clipboard
   const handleCopy = useCallback(async () => {
@@ -38,7 +41,8 @@ const OutputScreen: FC = () => {
       }
 
       setIsLoading(true);
-      await Clipboard.setStringAsync(repeatedText);
+      // Copy either styled or plain text based on toggle
+      await Clipboard.setStringAsync(displayText);
       setIsLoading(false);
 
       setIsCopied(true);
@@ -48,7 +52,7 @@ const OutputScreen: FC = () => {
       setIsLoading(false);
       Alert.alert('Error', 'Failed to copy text to clipboard');
     }
-  }, [repeatedText]);
+  }, [repeatedText, displayText]);
 
   // Share text
   const handleShare = useCallback(async () => {
@@ -60,20 +64,24 @@ const OutputScreen: FC = () => {
 
       setIsSharing(true);
       await Share.share({
-        message: repeatedText,
+        message: displayText,
       });
       setIsSharing(false);
     } catch (error) {
       setIsSharing(false);
       Alert.alert('Error', 'Failed to share text');
     }
-  }, [repeatedText]);
+  }, [repeatedText, displayText]);
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  const textLength = repeatedText.length;
+  const toggleStyledText = () => {
+    setUseStyledText(!useStyledText);
+  };
+
+  const textLength = displayText.length;
   const isLargeText = textLength > 100000; // Consider text over 100K characters as large
 
   if (!repeatedText) {
@@ -104,10 +112,17 @@ const OutputScreen: FC = () => {
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statValue}>
-            {repeatedText.split(/\s+/).filter(Boolean).length.toLocaleString()}
+            {displayText.split(/\s+/).filter(Boolean).length.toLocaleString()}
           </Text>
           <Text style={styles.statLabel}>Words</Text>
         </View>
+        {fontStyle !== 'Normal' && (
+          <TouchableOpacity style={styles.styleToggle} onPress={toggleStyledText}>
+            <Text style={styles.styleToggleText}>
+              {useStyledText ? 'Show Plain' : 'Show Styled'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.contentContainer}>
@@ -127,9 +142,9 @@ const OutputScreen: FC = () => {
                   This text is very large ({(textLength / 1000).toFixed(1)}K characters).
                 </Text>
                 <Text selectable style={styles.outputText}>
-                  {repeatedText.substring(0, 5000)}
+                  {displayText.substring(0, 5000)}
                   {'\n\n... (text truncated for display) ...\n\n'}
-                  {repeatedText.substring(repeatedText.length - 5000)}
+                  {displayText.substring(displayText.length - 5000)}
                 </Text>
                 <Text style={styles.warningText}>
                   Note: Only showing first and last 5000 characters for performance reasons. Use
@@ -138,7 +153,7 @@ const OutputScreen: FC = () => {
               </View>
             ) : (
               <Text selectable style={styles.outputText}>
-                {repeatedText}
+                {displayText}
               </Text>
             )}
           </ScrollView>
@@ -233,6 +248,18 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 14,
     color: '#666',
+  },
+  styleToggle: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    justifyContent: 'center',
+  },
+  styleToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
   },
   contentContainer: {
     flex: 1,
