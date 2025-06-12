@@ -3,6 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '.';
 import { Home, Settings } from '../screens';
+import { haptic } from '~/utils/haptics';
 
 const Tab = createBottomTabNavigator();
 
@@ -14,6 +15,11 @@ export default function TabLayout({ navigation }: Props) {
       screenOptions={{
         tabBarActiveTintColor: 'black',
         headerShown: false,
+      }}
+      screenListeners={{
+        tabPress: async () => {
+          await haptic.navigation();
+        },
       }}>
       <Tab.Screen
         name="Home"

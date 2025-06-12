@@ -23,6 +23,7 @@ import cn from '~/utils/cn';
 import AnimatedButton from '~/components/common/AnimatedButton';
 import { MainStackParamList } from '~/navigation/MainStack';
 import useTextStore from '~/store/textStore';
+import { haptic } from '~/utils/haptics';
 
 // Fix navigation type
 type HomeNavigationProp = NativeStackNavigationProp<MainStackParamList>;
@@ -39,7 +40,10 @@ const SettingMenu = ({ label, value, onChange }: SettingMenuProps) => {
       <SubText className="text-lg font-semibold text-gray-700">{label}</SubText>
       <Switch
         value={value}
-        onValueChange={() => onChange(!value)}
+        onValueChange={async () => {
+          await haptic.toggle();
+          onChange(!value);
+        }}
         trackColor={{ true: '#000', false: '#000' }}
         thumbColor={false ? '#000' : '#fff'}
       />
@@ -74,7 +78,8 @@ const Home: FC = () => {
     setCharCount(text.length);
   };
 
-  const handleClear = () => {
+  const handleClear = async () => {
+    await haptic.clear();
     setBaseText('');
     setHasText(false);
     setWordCount(0);
@@ -106,18 +111,22 @@ const Home: FC = () => {
     },
   ];
 
-  const handleRepeat = () => {
+  const handleRepeat = async () => {
     if (!hasText) {
+      await haptic.warning();
       Alert.alert('Please enter some text to repeat');
       return;
     }
 
     if (repetitions && repetitions > 0) {
+      await haptic.button('high'); // Important action
+
       // Start text generation - Zustand will handle the heavy lifting
       // Show loading or activity indicator for very large repetitions
       const isLargeRepetition = repetitions > 5000;
 
       if (isLargeRepetition) {
+        await haptic.warning();
         // For very large repetitions, show an alert to warn the user
         Alert.alert(
           'Large Number of Repetitions',
@@ -126,10 +135,14 @@ const Home: FC = () => {
             {
               text: 'Cancel',
               style: 'cancel',
+              onPress: async () => {
+                await haptic.button('low');
+              },
             },
             {
               text: 'Continue',
-              onPress: () => {
+              onPress: async () => {
+                await haptic.success();
                 // Use requestAnimationFrame to avoid UI blocking
                 requestAnimationFrame(() => {
                   generateRepeatedText();
@@ -141,10 +154,12 @@ const Home: FC = () => {
         );
       } else {
         // For smaller repetitions, generate immediately
+        await haptic.success();
         generateRepeatedText();
         navigation.navigate('OutputScreen');
       }
     } else {
+      await haptic.error();
       Alert.alert('Please enter a valid number of repetitions');
     }
   };
@@ -169,19 +184,12 @@ const Home: FC = () => {
           <SubText className="my-4 text-3xl font-extrabold text-black">
             Enter The Text You Want To Get Repeated
           </SubText>
-          <View className="flex-row justify-end">
-            {hasText && (
-              <TouchableOpacity className="rounded-lg bg-gray-200/90 p-2" onPress={handleClear}>
-                <SubText className="text-lg font-bold text-black">Clear Text</SubText>
-              </TouchableOpacity>
-            )}
-          </View>
           <View
             style={{
               height: WindowHeight * 0.08,
             }}
             className={cn(
-              'rounded-lg border-2 border-transparent bg-gray-200/90',
+              'flex-row items-center rounded-lg border-2 border-transparent bg-gray-200/90',
               inputFocused && 'border-2 border-black'
             )}>
             <TextInput
@@ -194,9 +202,19 @@ const Home: FC = () => {
               autoFocus={false}
               defaultValue={baseText}
               onChangeText={handleTextChange}
-              onFocus={() => setInputFocused(true)}
+              onFocus={async () => {
+                await haptic.input();
+                setInputFocused(true);
+              }}
               onBlur={() => setInputFocused(false)}
             />
+            {hasText && (
+              <TouchableOpacity
+                className="mr-2 rounded-full bg-gray-400/50 p-2"
+                onPress={handleClear}>
+                <SubText className="text-sm font-bold text-gray-700">✕</SubText>
+              </TouchableOpacity>
+            )}
           </View>
           <WordCharCounter words={wordCount} characters={charCount} />
           <View className="gap-3">
@@ -225,10 +243,13 @@ const Home: FC = () => {
                   onChangeText={(text) => setRepetitions(Number(text))}
                   returnKeyType="done"
                   onSubmitEditing={dismissKeyboard}
+                  onFocus={async () => {
+                    await haptic.input();
+                  }}
                 />
               </View>
 
-              <FontStyleSelector previewText={baseText || 'Sample Text'} />
+              <FontStyleSelector previewText="Sample Text" />
             </View>
           </View>
           <View className="mb-4 flex-1 justify-end">
@@ -236,6 +257,7 @@ const Home: FC = () => {
               textClassName="text-2xl font-bold text-white text-center"
               text="Repeat"
               onPress={handleRepeat}
+              hapticType="high"
             />
           </View>
         </Container>

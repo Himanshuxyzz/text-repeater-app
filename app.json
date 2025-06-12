@@ -44,7 +44,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.app.textrepeaterapp.main"
+      "bundleIdentifier": "com.app.textrepeaterapp.main",
+      "appleTeamId": "DN7FKWW353"
     },
     "android": {
       "adaptiveIcon": {

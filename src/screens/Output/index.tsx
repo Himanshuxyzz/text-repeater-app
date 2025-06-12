@@ -19,6 +19,7 @@ import Container from '@components/common/Container';
 import SubText from '@components/common/SubText';
 import AnimatedButton from '~/components/common/AnimatedButton';
 import useTextStore from '~/store/textStore';
+import { haptic } from '~/utils/haptics';
 
 const OutputScreen: FC = () => {
   const insets = useSafeAreaInsets();
@@ -36,20 +37,24 @@ const OutputScreen: FC = () => {
   const handleCopy = useCallback(async () => {
     try {
       if (!repeatedText) {
+        await haptic.warning();
         Alert.alert('Error', 'No text to copy');
         return;
       }
 
+      await haptic.button('medium');
       setIsLoading(true);
       // Copy either styled or plain text based on toggle
       await Clipboard.setStringAsync(displayText);
       setIsLoading(false);
 
+      await haptic.copy(); // Special copy haptic
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000); // Reset copied state after 2 seconds
       Alert.alert('Success', 'Text copied to clipboard');
     } catch (error) {
       setIsLoading(false);
+      await haptic.error();
       Alert.alert('Error', 'Failed to copy text to clipboard');
     }
   }, [repeatedText, displayText]);
@@ -58,10 +63,12 @@ const OutputScreen: FC = () => {
   const handleShare = useCallback(async () => {
     try {
       if (!repeatedText) {
+        await haptic.warning();
         Alert.alert('Error', 'No text to share');
         return;
       }
 
+      await haptic.share();
       setIsSharing(true);
       await Share.share({
         message: displayText,
@@ -69,15 +76,18 @@ const OutputScreen: FC = () => {
       setIsSharing(false);
     } catch (error) {
       setIsSharing(false);
+      await haptic.error();
       Alert.alert('Error', 'Failed to share text');
     }
   }, [repeatedText, displayText]);
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    await haptic.navigation();
     navigation.goBack();
   };
 
-  const toggleStyledText = () => {
+  const toggleStyledText = async () => {
+    await haptic.toggle();
     setUseStyledText(!useStyledText);
   };
 

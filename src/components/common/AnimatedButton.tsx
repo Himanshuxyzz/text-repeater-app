@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, PressableProps, ViewStyle, TextStyle } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import SubText from './SubText';
+import { haptic } from '~/utils/haptics';
 
 interface AnimatedButtonProps extends PressableProps {
   text: string;
@@ -9,6 +10,7 @@ interface AnimatedButtonProps extends PressableProps {
   textStyle?: TextStyle;
   containerClassName?: string;
   containerStyle?: ViewStyle;
+  hapticType?: 'low' | 'medium' | 'high';
 }
 
 const AnimatedButton: React.FC<AnimatedButtonProps> = ({
@@ -17,6 +19,8 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
   textStyle,
   containerClassName = 'rounded-full bg-red-500 py-5',
   containerStyle,
+  hapticType = 'medium',
+  onPress,
   ...pressableProps
 }) => {
   // Create a shared value for the scale
@@ -29,11 +33,13 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
     };
   });
 
-  const handlePressIn = () => {
+  const handlePressIn = async () => {
     scale.value = withSpring(0.96, {
       damping: 10,
       stiffness: 200,
     });
+    // Trigger haptic feedback on press
+    await haptic.button(hapticType);
   };
 
   const handlePressOut = () => {
@@ -50,6 +56,7 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
         style={containerStyle}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        onPress={onPress}
         {...pressableProps}>
         <SubText className={textClassName} style={textStyle}>
           {text}
