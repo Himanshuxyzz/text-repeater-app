@@ -1,13 +1,23 @@
 import React, { FC } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import useTextStore from '~/store/textStore';
+import { haptic } from '~/utils/haptics';
+import { MainStackParamList } from '~/navigation/MainStack';
+
+type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
 interface FontStyleSelectorProps {
   previewText?: string;
 }
 
 const FontStyleSelector: FC<FontStyleSelectorProps> = ({ previewText = 'Preview Text' }) => {
+  const navigation = useNavigation<NavigationProp>();
   const { fontStyle, availableFontStyles, setFontStyle } = useTextStore();
+
+  // Show only popular styles in horizontal scroll
+  const popularStyles = ['Normal', 'Hearts', 'Love', 'Stars', 'Sparkles', 'Roses', 'Fire', 'Crown'];
 
   const renderStylePreview = (style: string) => {
     const template = availableFontStyles[style];
@@ -24,18 +34,34 @@ const FontStyleSelector: FC<FontStyleSelectorProps> = ({ previewText = 'Preview 
     }
   };
 
+  const handleStyleSelect = async (style: string) => {
+    await haptic.button('medium');
+    setFontStyle(style);
+  };
+
+  const handleViewAll = async () => {
+    await haptic.button('medium');
+    navigation.navigate('FontStyleScreen', { previewText });
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Font Styles</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Font Styles</Text>
+        <TouchableOpacity style={styles.viewAllButton} onPress={handleViewAll}>
+          <Text style={styles.viewAllText}>View All</Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
-        {Object.keys(availableFontStyles).map((style) => (
+        {popularStyles.map((style) => (
           <TouchableOpacity
             key={style}
             style={[styles.styleOption, fontStyle === style && styles.selectedOption]}
-            onPress={() => setFontStyle(style)}>
+            onPress={() => handleStyleSelect(style)}>
             <Text
               style={[styles.styleText, fontStyle === style && styles.selectedText]}
               numberOfLines={1}>
@@ -55,11 +81,35 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 10,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
     color: 'black',
+  },
+  viewAllButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    shadowColor: '#007AFF',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  viewAllText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
   scrollContent: {
     paddingBottom: 8,

@@ -12,6 +12,7 @@ interface TextState {
   };
   fontStyle: string;
   availableFontStyles: { [key: string]: string };
+  fontStyleCategories: { [category: string]: string[] };
   setBaseText: (text: string) => void;
   setRepetitions: (count: number) => void;
   setSettings: (settings: { addPeriod: boolean; addNewLine: boolean; addSpace: boolean }) => void;
@@ -20,17 +21,189 @@ interface TextState {
   getStyledText: () => string;
 }
 
-// Font styles similar to those on iloveyoucopyandpaste.com
+// Expanded font styles with Unicode characters
 const fontStyles = {
-  Normal: '',
-  Stars: '★·.·´¯`·.·★ $TEXT$ ★·.·´¯`·.·★',
+  // Basic Styles
+  Normal: '$TEXT$',
+
+  // Hearts & Love
   Hearts: '♥♥♥ $TEXT$ ♥♥♥',
   Love: '💖 $TEXT$ 💖',
   Forever: '$TEXT$ Forever ❤️',
+  'Heart Arrow': '💘 $TEXT$ 💘',
+  'Double Hearts': '💕 $TEXT$ 💕',
+  'Sparkling Heart': '💖✨ $TEXT$ ✨💖',
+  'Heart Eyes': '😍 $TEXT$ 😍',
+  'Kiss Heart': '😘 $TEXT$ 😘',
+  'Cupid Love': '💘💕 $TEXT$ 💕💘',
+  Romantic: '💝 $TEXT$ 💝',
+
+  // Stars & Sparkles
+  Stars: '★·.·´¯`·.·★ $TEXT$ ★·.·´¯`·.·★',
   Sparkles: '✨💫 $TEXT$ 💫✨',
+  'Star Eyes': '🤩 $TEXT$ 🤩',
+  'Shooting Star': '🌟 $TEXT$ 🌟',
+  Twinkling: '✨⭐ $TEXT$ ⭐✨',
+  Glitter: '✨🌟✨ $TEXT$ ✨🌟✨',
+  'Starry Night': '🌙⭐ $TEXT$ ⭐🌙',
+  Magical: '🪄✨ $TEXT$ ✨🪄',
+
+  // Flowers & Nature
   Roses: '🌹 $TEXT$ 🌹',
-  Waves: '≈≈≈≈ $TEXT$ ≈≈≈≈',
+  'Cherry Blossom': '🌸 $TEXT$ 🌸',
+  Sunflower: '🌻 $TEXT$ 🌻',
+  Tulip: '🌷 $TEXT$ 🌷',
+  Hibiscus: '🌺 $TEXT$ 🌺',
+  Bouquet: '💐 $TEXT$ 💐',
+  Garden: '🌸🌺 $TEXT$ 🌺🌸',
+  Spring: '🌷🌸 $TEXT$ 🌸🌷',
+
+  // Decorative Borders
   Fancy: '•°¯`•• $TEXT$ ••´¯°•',
+  Waves: '≈≈≈≈ $TEXT$ ≈≈≈≈',
+  Ornate: '◆◇◆ $TEXT$ ◆◇◆',
+  Elegant: '═══ $TEXT$ ═══',
+  Royal: '♔ $TEXT$ ♔',
+  Crown: '👑 $TEXT$ 👑',
+  Diamond: '💎 $TEXT$ 💎',
+  Gem: '💎✨ $TEXT$ ✨💎',
+
+  // Arrows & Symbols
+  'Arrow Left': '← $TEXT$ →',
+  'Arrow Right': '→ $TEXT$ ←',
+  'Double Arrow': '⇆ $TEXT$ ⇆',
+  Pointing: '👉 $TEXT$ 👈',
+  'Up Arrow': '↑ $TEXT$ ↑',
+  'Circle Arrow': '↻ $TEXT$ ↺',
+
+  // Brackets & Frames
+  'Square Brackets': '[ $TEXT$ ]',
+  'Curly Brackets': '{ $TEXT$ }',
+  'Angle Brackets': '⟨ $TEXT$ ⟩',
+  'Double Brackets': '⟦ $TEXT$ ⟧',
+  'Corner Brackets': '「 $TEXT$ 」',
+  Rounded: '( $TEXT$ )',
+  'Heavy Brackets': '【 $TEXT$ 】',
+
+  // Fire & Energy
+  Fire: '🔥 $TEXT$ 🔥',
+  Lightning: '⚡ $TEXT$ ⚡',
+  Energy: '⚡🔥 $TEXT$ 🔥⚡',
+  Explosion: '💥 $TEXT$ 💥',
+  Spark: '✨⚡ $TEXT$ ⚡✨',
+
+  // Music & Party
+  Music: '🎵 $TEXT$ 🎵',
+  Party: '🎉 $TEXT$ 🎉',
+  Celebration: '🎊 $TEXT$ 🎊',
+  Dance: '💃 $TEXT$ 🕺',
+  Disco: '🪩 $TEXT$ 🪩',
+
+  // Animals & Cute
+  Cat: '🐱 $TEXT$ 🐱',
+  Dog: '🐶 $TEXT$ 🐶',
+  Bear: '🐻 $TEXT$ 🐻',
+  Panda: '🐼 $TEXT$ 🐼',
+  Unicorn: '🦄 $TEXT$ 🦄',
+  Butterfly: '🦋 $TEXT$ 🦋',
+
+  // Food & Treats
+  Cake: '🎂 $TEXT$ 🎂',
+  'Ice Cream': '🍦 $TEXT$ 🍦',
+  Candy: '🍭 $TEXT$ 🍭',
+  Cookie: '🍪 $TEXT$ 🍪',
+  Donut: '🍩 $TEXT$ 🍩',
+
+  // Celestial
+  Moon: '🌙 $TEXT$ 🌙',
+  Sun: '☀️ $TEXT$ ☀️',
+  Rainbow: '🌈 $TEXT$ 🌈',
+  Cloud: '☁️ $TEXT$ ☁️',
+  Thunder: '⛈️ $TEXT$ ⛈️',
+
+  // Emojis & Faces
+  Happy: '😊 $TEXT$ 😊',
+  Excited: '🤗 $TEXT$ 🤗',
+  Cool: '😎 $TEXT$ 😎',
+  Wink: '😉 $TEXT$ 😉',
+  Tongue: '😝 $TEXT$ 😝',
+
+  // Special Characters
+  Infinity: '∞ $TEXT$ ∞',
+  Peace: '☮️ $TEXT$ ☮️',
+  'Yin Yang': '☯️ $TEXT$ ☯️',
+  Anchor: '⚓ $TEXT$ ⚓',
+  Key: '🗝️ $TEXT$ 🗝️',
+
+  // Geometric
+  Triangle: '▲ $TEXT$ ▲',
+  Circle: '● $TEXT$ ●',
+  Square: '■ $TEXT$ ■',
+  Hexagon: '⬡ $TEXT$ ⬡',
+  'Star Shape': '⭐ $TEXT$ ⭐',
+};
+
+// Categories for organized display in modal
+const fontStyleCategories = {
+  'Hearts & Love': [
+    'Hearts',
+    'Love',
+    'Forever',
+    'Heart Arrow',
+    'Double Hearts',
+    'Sparkling Heart',
+    'Heart Eyes',
+    'Kiss Heart',
+    'Cupid Love',
+    'Romantic',
+  ],
+  'Stars & Sparkles': [
+    'Stars',
+    'Sparkles',
+    'Star Eyes',
+    'Shooting Star',
+    'Twinkling',
+    'Glitter',
+    'Starry Night',
+    'Magical',
+  ],
+  'Flowers & Nature': [
+    'Roses',
+    'Cherry Blossom',
+    'Sunflower',
+    'Tulip',
+    'Hibiscus',
+    'Bouquet',
+    'Garden',
+    'Spring',
+  ],
+  Decorative: ['Fancy', 'Waves', 'Ornate', 'Elegant', 'Royal', 'Crown', 'Diamond', 'Gem'],
+  'Arrows & Symbols': [
+    'Arrow Left',
+    'Arrow Right',
+    'Double Arrow',
+    'Pointing',
+    'Up Arrow',
+    'Circle Arrow',
+  ],
+  'Brackets & Frames': [
+    'Square Brackets',
+    'Curly Brackets',
+    'Angle Brackets',
+    'Double Brackets',
+    'Corner Brackets',
+    'Rounded',
+    'Heavy Brackets',
+  ],
+  'Fire & Energy': ['Fire', 'Lightning', 'Energy', 'Explosion', 'Spark'],
+  'Music & Party': ['Music', 'Party', 'Celebration', 'Dance', 'Disco'],
+  'Animals & Cute': ['Cat', 'Dog', 'Bear', 'Panda', 'Unicorn', 'Butterfly'],
+  'Food & Treats': ['Cake', 'Ice Cream', 'Candy', 'Cookie', 'Donut'],
+  Celestial: ['Moon', 'Sun', 'Rainbow', 'Cloud', 'Thunder'],
+  'Emojis & Faces': ['Happy', 'Excited', 'Cool', 'Wink', 'Tongue'],
+  Special: ['Infinity', 'Peace', 'Yin Yang', 'Anchor', 'Key'],
+  Geometric: ['Triangle', 'Circle', 'Square', 'Hexagon', 'Star Shape'],
+  Basic: ['Normal'],
 };
 
 const useTextStore = create<TextState>((set, get) => ({
@@ -39,6 +212,7 @@ const useTextStore = create<TextState>((set, get) => ({
   repetitions: 0,
   fontStyle: 'Normal',
   availableFontStyles: fontStyles,
+  fontStyleCategories: fontStyleCategories,
   settings: {
     addPeriod: false,
     addNewLine: false,
