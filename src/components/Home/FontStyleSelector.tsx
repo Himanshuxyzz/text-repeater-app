@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,13 +15,48 @@ interface FontStyleSelectorProps {
 const FontStyleSelector: FC<FontStyleSelectorProps> = ({ previewText = 'Preview Text' }) => {
   const navigation = useNavigation<NavigationProp>();
   const { fontStyle, availableFontStyles, setFontStyle } = useTextStore();
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Show only popular styles in horizontal scroll
-  const popularStyles = ['Normal', 'Hearts', 'Love', 'Stars', 'Sparkles', 'Roses', 'Fire', 'Crown'];
+  // Update time every second for previews
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Show only popular styles in horizontal scroll with "With Time" added
+  const popularStyles = [
+    'Normal',
+    'Hearts',
+    'Love',
+    'With Time',
+    'Sparkles',
+    'Roses',
+    'Fire',
+    'Crown',
+  ];
 
   const renderStylePreview = (style: string) => {
-    const template = availableFontStyles[style];
+    let template = availableFontStyles[style];
     if (!template) return previewText;
+
+    // For time-based styles, replace the time expressions with actual current time
+    if (style.includes('Time') || style.includes('Date')) {
+      template = template
+        .replace(/new Date\(\)\.toLocaleTimeString\(\)/g, `"${currentTime.toLocaleTimeString()}"`)
+        .replace(/new Date\(\)\.toLocaleDateString\(\)/g, `"${currentTime.toLocaleDateString()}"`)
+        .replace(
+          /new Date\(\)\.toLocaleTimeString\('en-US', \{hour12: true\}\)/g,
+          `"${currentTime.toLocaleTimeString('en-US', { hour12: true })}"`
+        )
+        .replace(
+          /new Date\(\)\.toLocaleTimeString\('en-US', \{hour: '2-digit', minute: '2-digit', second: '2-digit'\}\)/g,
+          `"${currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}"`
+        )
+        .replace(/"/g, ''); // Remove extra quotes from the replacements
+    }
 
     // Show how the style will be applied to individual words
     const words = previewText.split(' ');

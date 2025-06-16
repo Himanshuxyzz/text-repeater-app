@@ -1,4 +1,4 @@
-import React, { FC, useRef, useEffect, useMemo, useCallback, memo } from 'react';
+import React, { FC, useRef, useEffect, useMemo, useCallback, memo, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -43,13 +43,45 @@ const StyleOption = memo<{
   template: string;
   onSelect: (style: string) => void;
 }>(({ styleName, isSelected, previewText, template, onSelect }) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update time for time-based templates
+  useEffect(() => {
+    if (styleName.includes('Time') || styleName.includes('Date')) {
+      const timer = setInterval(() => {
+        setCurrentTime(new Date());
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [styleName]);
+
   const handlePress = useCallback(() => {
     onSelect(styleName);
   }, [styleName, onSelect]);
 
   const previewResult = useMemo(() => {
-    return template ? template.replace('$TEXT$', previewText) : previewText;
-  }, [template, previewText]);
+    if (!template) return previewText;
+
+    // Process time-based templates
+    let processedTemplate = template;
+    if (styleName.includes('Time') || styleName.includes('Date')) {
+      processedTemplate = template
+        .replace(/new Date\(\)\.toLocaleTimeString\(\)/g, `"${currentTime.toLocaleTimeString()}"`)
+        .replace(/new Date\(\)\.toLocaleDateString\(\)/g, `"${currentTime.toLocaleDateString()}"`)
+        .replace(
+          /new Date\(\)\.toLocaleTimeString\('en-US', \{hour12: true\}\)/g,
+          `"${currentTime.toLocaleTimeString('en-US', { hour12: true })}"`
+        )
+        .replace(
+          /new Date\(\)\.toLocaleTimeString\('en-US', \{hour: '2-digit', minute: '2-digit', second: '2-digit'\}\)/g,
+          `"${currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}"`
+        )
+        .replace(/"/g, ''); // Remove extra quotes from the replacements
+    }
+
+    return processedTemplate.replace('$TEXT$', previewText);
+  }, [template, previewText, styleName, currentTime]);
 
   return (
     <TouchableOpacity

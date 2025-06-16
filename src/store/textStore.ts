@@ -141,6 +141,22 @@ const fontStyles = {
   Square: '■ $TEXT$ ■',
   Hexagon: '⬡ $TEXT$ ⬡',
   'Star Shape': '⭐ $TEXT$ ⭐',
+
+  // Time & Date Formatting
+  'With Time': '🕒 $TEXT$ [' + new Date().toLocaleTimeString() + ']',
+  'Time Prefix': new Date().toLocaleTimeString() + ' | $TEXT$',
+  'Time Suffix': '$TEXT$ | ' + new Date().toLocaleTimeString(),
+  'Digital Time': '⏰ $TEXT$ (' + new Date().toLocaleTimeString() + ')',
+  'Date & Time':
+    '📅 $TEXT$ - ' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
+  'Timed Message': '[$TEXT$ @ ' + new Date().toLocaleTimeString('en-US', { hour12: true }) + ']',
+  'Seconds Counter':
+    '$TEXT$ ⏱️ ' +
+    new Date().toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }),
 };
 
 // Categories for organized display in modal
@@ -199,6 +215,15 @@ const fontStyleCategories = {
   'Music & Party': ['Music', 'Party', 'Celebration', 'Dance', 'Disco'],
   'Animals & Cute': ['Cat', 'Dog', 'Bear', 'Panda', 'Unicorn', 'Butterfly'],
   'Food & Treats': ['Cake', 'Ice Cream', 'Candy', 'Cookie', 'Donut'],
+  'Time & Date': [
+    'With Time',
+    'Time Prefix',
+    'Time Suffix',
+    'Digital Time',
+    'Date & Time',
+    'Timed Message',
+    'Seconds Counter',
+  ],
   Celestial: ['Moon', 'Sun', 'Rainbow', 'Cloud', 'Thunder'],
   'Emojis & Faces': ['Happy', 'Excited', 'Cool', 'Wink', 'Tongue'],
   Special: ['Infinity', 'Peace', 'Yin Yang', 'Anchor', 'Key'],
@@ -286,13 +311,28 @@ const useTextStore = create<TextState>((set, get) => ({
       return repeatedText;
     }
 
-    const styleTemplate = availableFontStyles[fontStyle] || '';
+    let styleTemplate = availableFontStyles[fontStyle] || '';
     if (!styleTemplate) {
       return repeatedText;
     }
 
-    // Apply style to each word/occurrence instead of the entire text
-    // First, split the text based on settings
+    // Update time values in real-time if this is a time-based style
+    if (fontStyle.includes('Time') || fontStyle.includes('Date')) {
+      const now = new Date();
+      styleTemplate = styleTemplate
+        .replace(/new Date\(\)\.toLocaleTimeString\(\)/g, `"${now.toLocaleTimeString()}"`)
+        .replace(/new Date\(\)\.toLocaleDateString\(\)/g, `"${now.toLocaleDateString()}"`)
+        .replace(
+          /new Date\(\)\.toLocaleTimeString\('en-US', \{hour12: true\}\)/g,
+          `"${now.toLocaleTimeString('en-US', { hour12: true })}"`
+        )
+        .replace(
+          /new Date\(\)\.toLocaleTimeString\('en-US', \{hour: '2-digit', minute: '2-digit', second: '2-digit'\}\)/g,
+          `"${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}"`
+        );
+    }
+
+    // Apply period if setting is enabled
     let separator = '';
     if (settings.addNewLine) {
       separator += '\n';
