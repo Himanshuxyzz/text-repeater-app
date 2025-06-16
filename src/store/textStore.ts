@@ -9,13 +9,21 @@ interface TextState {
     addPeriod: boolean;
     addNewLine: boolean;
     addSpace: boolean;
+    addNumbers: boolean;
+    addPercentages: boolean;
   };
   fontStyle: string;
   availableFontStyles: { [key: string]: string };
   fontStyleCategories: { [category: string]: string[] };
   setBaseText: (text: string) => void;
   setRepetitions: (count: number) => void;
-  setSettings: (settings: { addPeriod: boolean; addNewLine: boolean; addSpace: boolean }) => void;
+  setSettings: (settings: {
+    addPeriod: boolean;
+    addNewLine: boolean;
+    addSpace: boolean;
+    addNumbers: boolean;
+    addPercentages: boolean;
+  }) => void;
   setFontStyle: (style: string) => void;
   generateRepeatedText: () => string;
   getStyledText: () => string;
@@ -233,8 +241,8 @@ const fontStyleCategories = {
 
 const useTextStore = create<TextState>((set, get) => ({
   repeatedText: '',
-  baseText: '',
-  repetitions: 0,
+  baseText: 'I love you ❤️',
+  repetitions: 1000,
   fontStyle: 'Normal',
   availableFontStyles: fontStyles,
   fontStyleCategories: fontStyleCategories,
@@ -242,6 +250,8 @@ const useTextStore = create<TextState>((set, get) => ({
     addPeriod: false,
     addNewLine: false,
     addSpace: false,
+    addNumbers: false,
+    addPercentages: false,
   },
 
   setRepeatedText: (text: string) => set({ repeatedText: text }),
@@ -270,11 +280,18 @@ const useTextStore = create<TextState>((set, get) => ({
     let repeatedText;
 
     // Handle the case with no separators - use native repeat which is most optimized
-    if (!settings.addNewLine && !settings.addSpace) {
+    if (
+      !settings.addNewLine &&
+      !settings.addSpace &&
+      !settings.addNumbers &&
+      !settings.addPercentages
+    ) {
       repeatedText = processedText.repeat(repetitions);
     } else {
       // For cases with separators, use join which is next best
-      const separator = (settings.addNewLine ? '\n' : '') + (settings.addSpace ? ' ' : '');
+      let separator = '';
+      if (settings.addNewLine) separator += '\n';
+      if (settings.addSpace) separator += ' ';
 
       // For very large repetitions, generate in chunks
       if (repetitions > 1000) {
@@ -284,7 +301,25 @@ const useTextStore = create<TextState>((set, get) => ({
 
         for (let i = 0; i < chunks; i++) {
           const remainingReps = Math.min(chunkSize, repetitions - i * chunkSize);
-          const chunk = Array(remainingReps).fill(processedText).join(separator);
+          let chunk = '';
+
+          if (settings.addNumbers) {
+            chunk = Array(remainingReps)
+              .fill(0)
+              .map((_, index) => `${i * chunkSize + index + 1}. ${processedText}`)
+              .join(separator);
+          } else if (settings.addPercentages) {
+            chunk = Array(remainingReps)
+              .fill(0)
+              .map((_, index) => {
+                const percent = Math.round(((i * chunkSize + index + 1) / repetitions) * 100);
+                return `${percent}% ${processedText}`;
+              })
+              .join(separator);
+          } else {
+            chunk = Array(remainingReps).fill(processedText).join(separator);
+          }
+
           result += chunk;
 
           // Add separator between chunks if needed
@@ -295,8 +330,22 @@ const useTextStore = create<TextState>((set, get) => ({
 
         repeatedText = result;
       } else {
-        const repeatedArray = Array(repetitions).fill(processedText);
-        repeatedText = repeatedArray.join(separator);
+        if (settings.addNumbers) {
+          repeatedText = Array(repetitions)
+            .fill(0)
+            .map((_, index) => `${index + 1}. ${processedText}`)
+            .join(separator);
+        } else if (settings.addPercentages) {
+          repeatedText = Array(repetitions)
+            .fill(0)
+            .map((_, index) => {
+              const percent = Math.round(((index + 1) / repetitions) * 100);
+              return `${percent}% ${processedText}`;
+            })
+            .join(separator);
+        } else {
+          repeatedText = Array(repetitions).fill(processedText).join(separator);
+        }
       }
     }
 

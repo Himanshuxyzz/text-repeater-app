@@ -9,6 +9,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { useNavigation, StackActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -56,11 +57,6 @@ const Home: FC = () => {
   const navigation = useNavigation<HomeNavigationProp>();
   const textInputRef = useRef<TextInput>(null);
 
-  const [hasText, setHasText] = useState(false);
-  const [wordCount, setWordCount] = useState(0);
-  const [charCount, setCharCount] = useState(0);
-  const [inputFocused, setInputFocused] = useState(false);
-
   const {
     setBaseText,
     baseText,
@@ -70,6 +66,11 @@ const Home: FC = () => {
     setSettings,
     generateRepeatedText,
   } = useTextStore();
+
+  const [hasText, setHasText] = useState(baseText.length > 0);
+  const [wordCount, setWordCount] = useState(baseText.split(/\s+/).filter(Boolean).length);
+  const [charCount, setCharCount] = useState(baseText.length);
+  const [inputFocused, setInputFocused] = useState(false);
 
   const handleTextChange = (text: string) => {
     setBaseText(text);
@@ -90,7 +91,14 @@ const Home: FC = () => {
   };
 
   const handleSettingChange = (key: keyof typeof settings, value: boolean) => {
-    setSettings({ ...settings, [key]: value });
+    // Handle mutual exclusivity between addNumbers and addPercentages
+    if (key === 'addNumbers' && value === true) {
+      setSettings({ ...settings, addNumbers: true, addPercentages: false });
+    } else if (key === 'addPercentages' && value === true) {
+      setSettings({ ...settings, addNumbers: false, addPercentages: true });
+    } else {
+      setSettings({ ...settings, [key]: value });
+    }
   };
 
   const settingsList = [
@@ -108,6 +116,16 @@ const Home: FC = () => {
       label: 'Add space',
       value: settings.addSpace,
       onChange: (value: boolean) => handleSettingChange('addSpace', value),
+    },
+    {
+      label: 'Add numbers (1., 2., etc.)',
+      value: settings.addNumbers,
+      onChange: (value: boolean) => handleSettingChange('addNumbers', value),
+    },
+    {
+      label: 'Add percentages (25%, 50%, etc.)',
+      value: settings.addPercentages,
+      onChange: (value: boolean) => handleSettingChange('addPercentages', value),
     },
   ];
 
@@ -179,44 +197,57 @@ const Home: FC = () => {
     <>
       <PatternBackground />
       <View style={{ paddingTop: insets.top }} />
-      <TouchableWithoutFeedback onPress={dismissKeyboard}>
-        <Container fullScreen className={'gap-4'}>
-          <SubText className="my-4 text-3xl font-extrabold text-black">
-            Enter The Text You Want To Get Repeated
-          </SubText>
-          <View
-            style={{
-              height: WindowHeight * 0.08,
+      <Container
+        fullScreen
+        className={'gap-4'}
+        onTouchStart={() => {
+          if (inputFocused) {
+            Keyboard.dismiss();
+            setInputFocused(false);
+          }
+        }}>
+        <SubText className="my-4 text-3xl font-extrabold text-black">
+          Enter The Text You Want To Get Repeated
+        </SubText>
+        <View
+          style={{
+            height: WindowHeight * 0.08,
+          }}
+          className={cn(
+            'flex-row items-center rounded-lg border-2 border-transparent bg-gray-200/90',
+            inputFocused && 'border-2 border-black'
+          )}>
+          <TextInput
+            ref={textInputRef}
+            placeholder="Enter any text."
+            className="flex-1 p-2 text-2xl"
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect={false}
+            autoFocus={false}
+            defaultValue={baseText}
+            onChangeText={handleTextChange}
+            onFocus={async () => {
+              await haptic.input();
+              setInputFocused(true);
             }}
-            className={cn(
-              'flex-row items-center rounded-lg border-2 border-transparent bg-gray-200/90',
-              inputFocused && 'border-2 border-black'
-            )}>
-            <TextInput
-              ref={textInputRef}
-              placeholder="Enter any text."
-              className="flex-1 p-2 text-2xl"
-              autoCapitalize="none"
-              autoComplete="off"
-              autoCorrect={false}
-              autoFocus={false}
-              defaultValue={baseText}
-              onChangeText={handleTextChange}
-              onFocus={async () => {
-                await haptic.input();
-                setInputFocused(true);
-              }}
-              onBlur={() => setInputFocused(false)}
-            />
-            {hasText && (
-              <TouchableOpacity
-                className="mr-2 rounded-full bg-gray-400/50 p-2"
-                onPress={handleClear}>
-                <SubText className="text-sm font-bold text-gray-700">✕</SubText>
-              </TouchableOpacity>
-            )}
-          </View>
-          <WordCharCounter words={wordCount} characters={charCount} />
+            onBlur={() => setInputFocused(false)}
+          />
+          {hasText && (
+            <TouchableOpacity
+              className="mr-2 rounded-full bg-gray-400/50 p-2"
+              onPress={handleClear}>
+              <SubText className="text-sm font-bold text-gray-700">✕</SubText>
+            </TouchableOpacity>
+          )}
+        </View>
+        <WordCharCounter words={wordCount} characters={charCount} />
+
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 20 }}>
           <View className="gap-3">
             <SubText className="text-xl font-bold text-black">Settings </SubText>
 
@@ -252,16 +283,17 @@ const Home: FC = () => {
               <FontStyleSelector previewText="Sample Text" />
             </View>
           </View>
-          <View className="mb-4 flex-1 justify-end">
-            <AnimatedButton
-              textClassName="text-2xl font-bold text-white text-center"
-              text="Repeat"
-              onPress={handleRepeat}
-              hapticType="high"
-            />
-          </View>
-        </Container>
-      </TouchableWithoutFeedback>
+        </ScrollView>
+
+        <View className="mb-4">
+          <AnimatedButton
+            textClassName="text-2xl font-bold text-white text-center"
+            text="Repeat"
+            onPress={handleRepeat}
+            hapticType="high"
+          />
+        </View>
+      </Container>
     </>
   );
 };
