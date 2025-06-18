@@ -15,6 +15,7 @@ export default function TabLayout({ navigation }: Props) {
       screenOptions={{
         tabBarActiveTintColor: 'black',
         headerShown: false,
+        animation: 'shift',
       }}
       screenListeners={{
         tabPress: async () => {
