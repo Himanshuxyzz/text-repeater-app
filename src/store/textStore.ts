@@ -241,8 +241,8 @@ const fontStyleCategories = {
 
 const useTextStore = create<TextState>((set, get) => ({
   repeatedText: '',
-  baseText: 'I love you ❤️',
-  repetitions: 1000,
+  baseText: Array(20).fill('❤️ I Love You ❤️').join(' '),
+  repetitions: 10000,
   fontStyle: 'Normal',
   availableFontStyles: fontStyles,
   fontStyleCategories: fontStyleCategories,

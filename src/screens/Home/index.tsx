@@ -190,6 +190,10 @@ const Home: FC = () => {
   useEffect(() => {
     if (baseText && textInputRef.current) {
       textInputRef.current.setNativeProps({ text: baseText });
+      // Also initialize word and char counts
+      setWordCount(baseText.split(/\s+/).filter(Boolean).length);
+      setCharCount(baseText.length);
+      setHasText(baseText.length > 0);
     }
   }, []);
 
@@ -211,21 +215,23 @@ const Home: FC = () => {
         </SubText>
         <View
           style={{
-            height: WindowHeight * 0.08,
+            height: WindowHeight * 0.26,
           }}
           className={cn(
-            'flex-row items-center rounded-lg border-2 border-transparent bg-gray-200/90',
+            'flex-row items-start rounded-lg border-2 border-transparent bg-gray-200/90',
             inputFocused && 'border-2 border-black'
           )}>
           <TextInput
             ref={textInputRef}
             placeholder="Enter any text."
-            className="flex-1 p-2 text-2xl"
+            className="flex-1 p-4 text-xl"
             autoCapitalize="none"
             autoComplete="off"
             autoCorrect={false}
             autoFocus={false}
             defaultValue={baseText}
+            multiline={true}
+            textAlignVertical="top"
             onChangeText={handleTextChange}
             onFocus={async () => {
               await haptic.input();
@@ -234,9 +240,7 @@ const Home: FC = () => {
             onBlur={() => setInputFocused(false)}
           />
           {hasText && (
-            <TouchableOpacity
-              className="mr-2 rounded-full bg-gray-400/50 p-2"
-              onPress={handleClear}>
+            <TouchableOpacity className="m-2 rounded-full bg-gray-400/50 p-2" onPress={handleClear}>
               <SubText className="text-sm font-bold text-gray-700">✕</SubText>
             </TouchableOpacity>
           )}
